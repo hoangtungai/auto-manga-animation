@@ -1,0 +1,183 @@
+<!doctype html>
+<html lang="vi">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Manga Animator</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Bangers&family=Be+Vietnam+Pro:wght@400;500;600;800&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="logo">MANGA<b>ANIMATOR</b></span>
+        <span class="tag">Claude Code × HyperFrames</span>
+      </div>
+      <button id="newBtn" class="ghost" hidden>+ Trang mới</button>
+    </header>
+
+    <main>
+      <!-- Step 1: upload -->
+      <section id="uploadView" class="panel upload">
+        <div class="burst">ドン!</div>
+        <h1 class="upload-title">Tải ảnh lên</h1>
+        <p class="upload-sub">PNG, JPG, WEBP · tối đa 25 MB mỗi ảnh</p>
+        <div class="slots">
+          <label class="slot" data-slot="open">
+            <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            <span class="slot-tag req">Bắt buộc</span>
+            <img alt="" hidden />
+            <span class="slot-empty"><b>+</b>Kéo thả hoặc bấm để chọn</span>
+            <button type="button" class="slot-clear" title="Xoá ảnh" hidden>✕</button>
+            <strong>Ảnh gốc</strong>
+            <small>Ảnh chính, mắt mở</small>
+          </label>
+          <label class="slot" data-slot="closed">
+            <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            <span class="slot-tag">Tuỳ chọn</span>
+            <img alt="" hidden />
+            <span class="slot-empty"><b>+</b>Kéo thả hoặc bấm để chọn</span>
+            <button type="button" class="slot-clear" title="Xoá ảnh" hidden>✕</button>
+            <strong>Ảnh nhắm mắt</strong>
+            <small>Giống ảnh gốc, chỉ khác mắt nhắm, để chớp mắt</small>
+          </label>
+          <label class="slot" data-slot="pose">
+            <input type="file" accept="image/png,image/jpeg,image/webp" hidden />
+            <span class="slot-tag">Tuỳ chọn</span>
+            <img alt="" hidden />
+            <span class="slot-empty"><b>+</b>Kéo thả hoặc bấm để chọn</span>
+            <button type="button" class="slot-clear" title="Xoá ảnh" hidden>✕</button>
+            <strong>Ảnh animation</strong>
+            <small>Lệch chuyển động 5–10% so với ảnh gốc, để bật chế độ phim</small>
+          </label>
+        </div>
+        <button id="pickStart" type="button" class="btn red big start" disabled>▶ Bắt đầu</button>
+        <ol class="steps">
+          <li><b>1</b> Claude Code đọc ảnh, tách khung truyện và viết mô tả animation.</li>
+          <li><b>2</b> Bạn sửa mô tả, vùng khung và hiệu ứng ngay trên giao diện.</li>
+          <li><b>3</b> HyperFrames dựng chuyển động và xuất video MP4 để tải về.</li>
+        </ol>
+      </section>
+
+      <!-- Step 2: edit + render -->
+      <section id="editView" class="editor" hidden>
+        <div class="col-left">
+          <div class="panel stage">
+            <div class="stage-head">
+              <h2>Trang gốc</h2>
+              <span class="hint">Chọn một cảnh rồi kéo chuột trên ảnh để vẽ lại vùng khung</span>
+            </div>
+            <div id="imgWrap" class="img-wrap">
+              <img id="srcImg" alt="Trang truyện đã tải lên" draggable="false" />
+              <div id="boxes"></div>
+              <div id="drawBox" class="draw-box" hidden></div>
+            </div>
+            <p id="notice" class="notice" hidden></p>
+          </div>
+
+          <div class="panel output">
+            <h2>Video</h2>
+            <div id="status" class="status idle">Chưa tạo video.</div>
+            <div id="progress" class="progress" hidden><i></i></div>
+            <pre id="log" class="log" hidden></pre>
+            <video id="video" controls playsinline hidden></video>
+            <a id="download" class="btn red" download hidden>⬇ Tải video MP4</a>
+          </div>
+        </div>
+
+        <div class="col-right">
+          <div class="panel plan">
+            <div id="analyzing" class="analyzing" hidden>
+              <div class="spinner"></div>
+              <div>
+                <b>Claude Code đang phân tích trang truyện…</b>
+                <p>Thường mất 30–90 giây.</p>
+              </div>
+            </div>
+            <div id="planBody" hidden>
+              <div class="plan-head">
+                <input id="title" class="title-input" placeholder="Tên đoạn phim" />
+                <button id="reanalyze" class="ghost small" title="Phân tích lại bằng Claude Code">↻ Phân tích lại</button>
+              </div>
+              <textarea id="summary" class="summary" rows="3" placeholder="Tóm tắt trang truyện"></textarea>
+              <div id="shots" class="shots"></div>
+              <button id="addShot" class="ghost wide">+ Thêm cảnh</button>
+            </div>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <footer id="actionBar" class="action-bar" hidden>
+      <div class="opts">
+        <label>Chất lượng
+          <select id="optQuality">
+            <option value="draft">Nháp (nhanh)</option>
+            <option value="looks" selected>Đẹp</option>
+            <option value="delivery">Cao nhất</option>
+          </select>
+        </label>
+        <label class="check"><input id="optIntro" type="checkbox" /> Mở đầu toàn trang</label>
+        <label class="check"><input id="optOutro" type="checkbox" /> Kết thúc toàn trang</label>
+        <label class="check" title="Chế độ phim: mỗi lần tạo video sẽ đổi ngẫu nhiên chuyển cảnh, cách quay và hiệu ứng">
+          <input id="optVary" type="checkbox" checked /> Ngẫu nhiên đa dạng
+        </label>
+        <label class="check" title="Trước khi render, Claude Code đọc lại mô tả đã sửa và chỉnh hiệu ứng cho khớp">
+          <input id="optSync" type="checkbox" checked /> Đồng bộ thông số theo mô tả (Claude)
+        </label>
+      </div>
+      <div class="go">
+        <span id="totalDur" class="total"></span>
+        <button id="renderBtn" class="btn red big">▶ Tạo video</button>
+      </div>
+    </footer>
+
+    <template id="shotTpl">
+      <article class="shot">
+        <div class="shot-head">
+          <span class="num"></span>
+          <div class="thumb"></div>
+          <div class="shot-meta">
+            <span class="meta-line"></span>
+          </div>
+          <div class="shot-tools">
+            <button data-act="up" title="Lên">↑</button>
+            <button data-act="down" title="Xuống">↓</button>
+            <button data-act="del" title="Xoá">✕</button>
+          </div>
+        </div>
+        <label class="lbl">Mô tả animation</label>
+        <textarea class="desc" rows="3"></textarea>
+        <details class="params">
+          <summary>Thông số chuyển động</summary>
+          <div class="grid">
+            <label>Máy quay <select data-k="camera.move"></select></label>
+            <label>Độ mạnh <input data-k="camera.amount" type="range" min="0" max="1" step="0.05" /></label>
+            <label>Thời lượng (giây) <input data-k="duration" type="number" min="0.5" max="12" step="0.1" /></label>
+            <label>Chuyển cảnh <select data-k="transition"></select></label>
+            <label>Hướng gió <select data-k="motion.windDir"></select></label>
+            <label>Chữ tượng thanh (SFX) <input data-k="sfx" maxlength="24" placeholder="vd: BOOM!" /></label>
+            <label>Phụ đề <input data-k="caption" maxlength="160" placeholder="Lời thoại hiển thị" /></label>
+          </div>
+          <div class="fx"></div>
+          <div class="parts-head">
+            Bộ phận chuyển động <span class="hint">kéo 2 điểm A, B trên ảnh gốc để chỉnh vị trí</span>
+          </div>
+          <div class="parts"></div>
+          <button type="button" class="ghost small add-part">+ Thêm bộ phận</button>
+          <div class="bbox-row">
+            Vùng khung (%):
+            <label>x <input data-k="bbox.x" type="number" min="0" max="100" step="0.5" /></label>
+            <label>y <input data-k="bbox.y" type="number" min="0" max="100" step="0.5" /></label>
+            <label>w <input data-k="bbox.w" type="number" min="1" max="100" step="0.5" /></label>
+            <label>h <input data-k="bbox.h" type="number" min="1" max="100" step="0.5" /></label>
+          </div>
+        </details>
+      </article>
+    </template>
+
+    <script src="app.js" type="module"></script>
+  </body>
+</html>

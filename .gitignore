@@ -1,0 +1,24 @@
+# Dependencies & npm cache (recreated by npm install)
+node_modules/
+.npm-cache/
+
+# Runtime output: uploads, renders, per-job projects
+jobs/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Logs
+*.log
+npm-debug.log*
+
+# OS & editors
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Local Claude Code settings
+.claude/settings.local.json
